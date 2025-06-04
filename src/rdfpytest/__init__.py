@@ -24,7 +24,7 @@ def uri_to_path(uri: str) -> Path:
     return Path(parse_result.path)
 
 def pytest_collect_file(parent: Node, file_path: Path):
-    if file_path.suffix in {".ttl", ".json", ".json-ld"} and file_path.name.startswith("test"):
+    if file_path.suffix in {".ttl", ".json", ".json-ld", ".jsonld"} and file_path.name.startswith("test"):
         return RdfTestManifest.from_parent(parent, path=file_path)
 
 class RdfTestManifest(pytest.File):
@@ -42,6 +42,7 @@ class RdfTestManifest(pytest.File):
         for test_case in manifest.ref_objs(MF.entries):
             yield RdfTestCase.from_parent(
                 self,
+                name=test_case.lit_obj(MF.name),
                 node=test_case
             )
 
