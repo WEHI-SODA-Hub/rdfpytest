@@ -70,7 +70,7 @@ class RdfTestCase(pytest.Item):
             raise Exception(
                 "SHACL validation did not return a valid results graph."
             )
-        if conforms != expected_result.lit_obj(SHT.conforms):
+        if conforms != expected_result.lit_obj(SH.conforms):
             raise ShaclException(
                 actual=GraphNavigator(results_graph).subject(RDF.type, SH.ValidationReport),
                 expected=expected_result
