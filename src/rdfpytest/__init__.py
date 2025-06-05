@@ -72,7 +72,7 @@ class RdfTestCase(pytest.Item):
             )
         if conforms != expected_result.lit_obj(SHT.conforms):
             raise ShaclException(
-                actual=GraphNavigator(results_graph).subject(RDF.type, SHT.ValidationReport),
+                actual=GraphNavigator(results_graph).subject(RDF.type, SH.ValidationReport),
                 expected=expected_result
             )
 
@@ -100,7 +100,7 @@ class ShaclException(Exception):
     expected: UriNode
 
     def __str__(self):
-        return "".join([
+        return "\n".join([
             "SHACL validation failed.",
             "Actual validation results:",
             *[result.lit_obj(SH.value) for result in self.actual.ref_objs(SH.result)],
