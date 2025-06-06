@@ -8,7 +8,7 @@ from typing import Any, Iterator
 import pytest
 from pathlib import Path
 from _pytest.nodes import Node, Item, Collector
-from rdflib import Graph, Namespace, RDF, SH
+from rdflib import Graph, Namespace, SH
 from rdfnav import GraphNavigator, UriNode
 from urllib.parse import urlparse
 from pyshacl import validate
@@ -33,7 +33,7 @@ class RdfTestManifest(pytest.File):
     def collect(self) -> Iterator[Item | Collector]:
         graph = Graph().parse(str(self.fspath))
         nav = GraphNavigator(graph)
-        for manifest in nav.subjects(RDF.type, MF.Manifest):
+        for manifest in nav.instances(MF.Manifest):
             yield from self.yield_tests(manifest)
 
     def yield_tests(self, manifest: UriNode) -> Iterator[Item | Collector]:
@@ -61,10 +61,7 @@ class RdfTestCase(pytest.Item):
         conforms, results_graph, _ = validate(
             data_graph=Graph().parse(uri_to_path(str(data_graph.iri))),
             shacl_graph=Graph().parse(uri_to_path(str(shapes_graph.iri))),
-            inference='rdfs',
-            debug=True,
-            allow_warnings=True,
-            abort_on_error=False,
+            inference='rdfs'
         )
         if not isinstance(results_graph, Graph):
             raise Exception(
@@ -72,7 +69,7 @@ class RdfTestCase(pytest.Item):
             )
         if conforms != expected_result.lit_obj(SH.conforms):
             raise ShaclException(
-                actual=GraphNavigator(results_graph).subject(RDF.type, SH.ValidationReport),
+                actual=GraphNavigator(results_graph).instance(SH.ValidationReport),
                 expected=expected_result
             )
 
