@@ -76,22 +76,6 @@ class RdfTestCase(pytest.Item):
                 expected=expected_result
             )
 
-    # def repr_failure(
-    #     self,
-    #     excinfo: pytest.ExceptionInfo[BaseException],
-    #     # style: TracebackStyle | None = None,
-    # ) -> str:
-    #     """Called when self.runtest() raises an exception."""
-    #     if isinstance(excinfo.value, ShaclException):
-    #         return "\n".join(
-    #             [
-    #                 "usecase execution failed",
-    #                 "   spec failed: {1!r}: {2!r}".format(*excinfo.value.args),
-    #                 "   no further details known at this point.",
-    #             ]
-    #         )
-    #     return super().repr_failure(excinfo)
-
 @dataclass
 class ShaclException(Exception):
     #: The result of the SHACL validation
@@ -99,11 +83,11 @@ class ShaclException(Exception):
     #: The expected validation report
     expected: UriNode
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "\n".join([
             "SHACL validation failed.",
-            "Actual validation results:",
-            *[result.lit_obj(SH.value) for result in self.actual.ref_objs(SH.result)],
-            "Expected validation results:",
-            *[result.lit_obj(SH.value) for result in self.expected.ref_objs(SH.result)]
+            "Actual validation report:",
+            self.actual.subgraph().serialize(format='json-ld'),
+            "Expected validation report:",
+            self.expected.subgraph().serialize(format='json-ld'),
         ])
