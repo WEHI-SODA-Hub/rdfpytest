@@ -12,6 +12,7 @@ from rdflib import Graph, Namespace, SH
 from rdfnav import GraphNavigator, UriNode
 from urllib.parse import urlparse
 from pyshacl import validate
+from itertools import chain
 
 MF = Namespace("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#")
 DAWGT = Namespace("http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#")
@@ -59,11 +60,7 @@ class RdfTestCase(pytest.Item):
         shapes_graph = action.ref_obj_via(SHT.shapesGraph)
         data_graph = action.ref_obj_via(SHT.dataGraph)
         expected_result = self.node.ref_obj_via(MF.result)
-        kwargs = {
-            key.replace(RPT, ""): value
-            for key, value in self.node.lit_objs()
-            if key.startswith(RPT)
-        }
+        kwargs: dict[str, Any] = {k: str(v.iri) for k, v in self.node.ref_objs_sans_prefix(RPT)} | dict(self.node.lit_objs_sans_prefix(RPT))
         conforms, results_graph, _ = validate(
             data_graph=Graph().parse(uri_to_path(str(data_graph.iri))),
             shacl_graph=Graph().parse(uri_to_path(str(shapes_graph.iri))),

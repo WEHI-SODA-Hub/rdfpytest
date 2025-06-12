@@ -140,7 +140,7 @@ html = [
 [[package]]
 name = "rdfnav"
 version = "0.1.0"
-source = { git = "https://github.com/WEHI-SODA-Hub/RdfNav?rev=main#3017ce7532de27063c9db85c89d3e81e94a489be" }
+source = { git = "https://github.com/WEHI-SODA-Hub/RdfNav?rev=main#6cc127c121d5a0be03d3c6127161c20b8b9549e0" }
 dependencies = [
     { name = "rdflib" },
 ]
