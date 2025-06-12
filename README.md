@@ -34,7 +34,7 @@ For example, a JSON-LD test manifest might look like this:
     "@type": "mf:Manifest",
     "mf:entries": [
         {
-            "@type": "Validate",
+            "@type": "sht:Validate",
             "mf:name": "Add your test name here",
             "mf:action": {
                 "sht:shapesGraph": {"@id": "/path/to/shapes.ttl"},
@@ -52,3 +52,36 @@ For example, a JSON-LD test manifest might look like this:
 * `sht:shapesGraph` and `sht:dataGraph` are URLs that point to the shapes and data graphs. Typically these will be files in your repository.
 * `sh:conforms` describes whether you expect the data to validate successfully (`true`) or unsuccessfully (`false`)
 * `mf:name` is used to name the pytest cases that get generated
+
+## Customization
+
+`rdfpytest` supports the use of non-standard IRIs that can be used to configure the testing, based on extra parameters that `pySHACL` accepts. These IRIs should be attached to the `sht:Validate` entity. These all have the prefix `https://w3id.org/WEHI-SODA-Hub/rdfpytest` combined with the [Python parameter name](https://github.com/RDFLib/pySHACL?tab=readme-ov-file#python-module-use). 
+
+For example if you wanted `INFO` severity validations to not cause the test failures:
+```json
+{
+    "@context": {
+        ...,
+        "rpt:" "https://w3id.org/WEHI-SODA-Hub/rdfpytest"
+    },
+    "@type": "sht:Validate",
+    "rpt:allow_infos": true
+    ...
+}
+```
+
+Or, if you wanted to only validate a subset of all the validation shapes, you could use
+```json
+{
+    "@context": {
+        ...,
+        "rpt:" "https://w3id.org/WEHI-SODA-Hub/rdfpytest"
+    },
+    "@type": "sht:Validate",
+    "rpt:use_shapes": [
+        "some_iri",
+        "other_iri
+    ]
+    ...
+}
+```

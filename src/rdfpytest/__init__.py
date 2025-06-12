@@ -17,6 +17,7 @@ MF = Namespace("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#")
 DAWGT = Namespace("http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#")
 QT = Namespace("http://www.w3.org/2001/sw/DataAccess/tests/test-query#")
 SHT = Namespace("http://www.w3.org/ns/shacl-test#")
+RPT = Namespace("https://w3id.org/WEHI-SODA-Hub/rdfpytest/")
 
 def uri_to_path(uri: str) -> Path:
     """Convert a URI to a local file path."""
@@ -37,12 +38,12 @@ class RdfTestManifest(pytest.File):
             yield from self.yield_tests(manifest)
 
     def yield_tests(self, manifest: UriNode) -> Iterator[Item | Collector]:
-        for sub_manifest in manifest.ref_objs(MF.include):
+        for sub_manifest in manifest.ref_objs_via(MF.include):
             yield RdfTestManifest.from_parent(self, path=uri_to_path(str(sub_manifest.iri)))
-        for test_case in manifest.ref_objs(MF.entries):
+        for test_case in manifest.ref_objs_via(MF.entries):
             yield RdfTestCase.from_parent(
                 self,
-                name=test_case.lit_obj(MF.name),
+                name=test_case.lit_obj_via(MF.name),
                 node=test_case
             )
 
@@ -54,20 +55,25 @@ class RdfTestCase(pytest.Item):
         self.node = node
 
     def runtest(self):
-        action = self.node.ref_obj(MF.action)
-        shapes_graph = action.ref_obj(SHT.shapesGraph)
-        data_graph = action.ref_obj(SHT.dataGraph)
-        expected_result = self.node.ref_obj(MF.result)
+        action = self.node.ref_obj_via(MF.action)
+        shapes_graph = action.ref_obj_via(SHT.shapesGraph)
+        data_graph = action.ref_obj_via(SHT.dataGraph)
+        expected_result = self.node.ref_obj_via(MF.result)
+        kwargs = {
+            key.replace(RPT, ""): value
+            for key, value in self.node.lit_objs()
+            if key.startswith(RPT)
+        }
         conforms, results_graph, _ = validate(
             data_graph=Graph().parse(uri_to_path(str(data_graph.iri))),
             shacl_graph=Graph().parse(uri_to_path(str(shapes_graph.iri))),
-            inference='rdfs'
+            **kwargs
         )
         if not isinstance(results_graph, Graph):
             raise Exception(
                 "SHACL validation did not return a valid results graph."
             )
-        if conforms != expected_result.lit_obj(SH.conforms):
+        if conforms != expected_result.lit_obj_via(SH.conforms):
             raise ShaclException(
                 actual=GraphNavigator(results_graph).instance(SH.ValidationReport),
                 expected=expected_result

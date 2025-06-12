@@ -140,7 +140,7 @@ html = [
 [[package]]
 name = "rdfnav"
 version = "0.1.0"
-source = { git = "https://github.com/WEHI-SODA-Hub/RdfNav#d45eb5e5bf31723ca8c16a8cb491c954eabe335d" }
+source = { git = "https://github.com/WEHI-SODA-Hub/RdfNav?rev=main#3017ce7532de27063c9db85c89d3e81e94a489be" }
 dependencies = [
     { name = "rdflib" },
 ]
@@ -161,7 +161,7 @@ requires-dist = [
     { name = "pyshacl", specifier = ">=0.26.0" },
     { name = "pytest", specifier = ">=8.4.0" },
     { name = "rdflib", specifier = ">=7.1.4" },
-    { name = "rdfnav", git = "https://github.com/WEHI-SODA-Hub/RdfNav" },
+    { name = "rdfnav", git = "https://github.com/WEHI-SODA-Hub/RdfNav?rev=main" },
 ]
 
 [[package]]
