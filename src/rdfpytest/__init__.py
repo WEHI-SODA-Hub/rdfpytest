@@ -12,7 +12,7 @@ from rdflib import Graph, Namespace, SH
 from rdfnav import GraphNavigator, UriNode
 from urllib.parse import urlparse
 from pyshacl import validate
-from itertools import chain
+from itertools import chain, groupby
 
 MF = Namespace("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#")
 DAWGT = Namespace("http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#")
@@ -60,11 +60,41 @@ class RdfTestCase(pytest.Item):
         shapes_graph = action.ref_obj_via(SHT.shapesGraph)
         data_graph = action.ref_obj_via(SHT.dataGraph)
         expected_result = self.node.ref_obj_via(MF.result)
-        kwargs: dict[str, Any] = {k: str(v.iri) for k, v in self.node.ref_objs_sans_prefix(RPT)} | dict(self.node.lit_objs_sans_prefix(RPT))
+
+        validator_kwargs: dict[str, Any] = {} 
+
+        # Add literal parameters specified using the RPT prefix
+        literal_params = {
+            "advanced",
+            "inference",
+            "inplace",
+            "abort_on_first",
+            "allow_infos",
+            "allow_warnings",
+            "max_validation_depth",
+            "sparql_mode"
+        }
+        for pred, obj in self.node.lit_objs_sans_prefix(RPT):
+            if pred not in literal_params:
+                raise ValueError(f"Unknown parameter {pred} in test case {self.node.iri}")
+            if pred in validator_kwargs:
+                raise ValueError(f"Duplicate parameter {pred}")
+            validator_kwargs[pred] = obj
+
+        # Add URI params specified using the RPT prefix
+        uri_params = {
+            "focus_nodes",
+            "use_shapes"
+        }
+        for pred, objs in groupby(self.node.ref_objs_sans_prefix(RPT), key=lambda x: x[0]):
+            if pred not in uri_params:
+                raise ValueError(f"Unknown parameter {pred} in test case {self.node.iri}")
+            validator_kwargs[pred] = [str(obj.iri) for _, obj in objs]
+        
         conforms, results_graph, _ = validate(
             data_graph=Graph().parse(uri_to_path(str(data_graph.iri))),
             shacl_graph=Graph().parse(uri_to_path(str(shapes_graph.iri))),
-            **kwargs
+            **validator_kwargs
         )
         if not isinstance(results_graph, Graph):
             raise Exception(
