@@ -72,7 +72,13 @@ class RdfTestCase(pytest.Item):
             "allow_infos",
             "allow_warnings",
             "max_validation_depth",
-            "sparql_mode"
+            "sparql_mode",
+            "debug",
+            "js",
+            "meta_shacl",
+            "iterate_rules",
+            "check_dash_result",
+            "do_owl_imports"
         }
         for pred, obj in self.node.lit_objs_sans_prefix(RPT):
             if pred not in literal_params:
