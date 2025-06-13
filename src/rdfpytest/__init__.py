@@ -36,7 +36,7 @@ def to_compact_jsonld(graph: Graph) -> str:
     """Convert an RDF graph to a compact JSON-LD string."""
     return json.dumps(jsonld.compact(
         from_rdf(graph),
-        ctx={ "sh": SH }
+        ctx={ "sh": str(SH) }
     ), indent=4)
 
 class RdfTestManifest(pytest.File):
