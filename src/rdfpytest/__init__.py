@@ -12,7 +12,10 @@ from rdflib import Graph, Namespace, SH
 from rdfnav import GraphNavigator, UriNode
 from urllib.parse import urlparse
 from pyshacl import validate
-from itertools import chain, groupby
+from itertools import groupby
+from pyld import jsonld
+import json
+from rdflib.plugins.serializers.jsonld import from_rdf
 
 MF = Namespace("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#")
 DAWGT = Namespace("http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#")
@@ -28,6 +31,13 @@ def uri_to_path(uri: str) -> Path:
 def pytest_collect_file(parent: Node, file_path: Path):
     if file_path.suffix in {".ttl", ".json", ".json-ld", ".jsonld"} and file_path.name.startswith("test"):
         return RdfTestManifest.from_parent(parent, path=file_path)
+
+def to_compact_jsonld(graph: Graph) -> str:
+    """Convert an RDF graph to a compact JSON-LD string."""
+    return json.dumps(jsonld.compact(
+        from_rdf(graph.serialize),
+        ctx={ "sh": SH }
+    ), indent=4)
 
 class RdfTestManifest(pytest.File):
     """A pytest File that represents a test manifest file."""
@@ -123,7 +133,7 @@ class ShaclException(Exception):
         return "\n".join([
             "SHACL validation failed.",
             "Actual validation report:",
-            self.actual.subgraph().serialize(format='json-ld'),
+            to_compact_jsonld(self.actual.subgraph()),
             "Expected validation report:",
-            self.expected.subgraph().serialize(format='json-ld'),
+            to_compact_jsonld(self.expected.subgraph())
         ])
