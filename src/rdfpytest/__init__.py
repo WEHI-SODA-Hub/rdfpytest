@@ -35,7 +35,7 @@ def pytest_collect_file(parent: Node, file_path: Path):
 def to_compact_jsonld(graph: Graph) -> str:
     """Convert an RDF graph to a compact JSON-LD string."""
     return json.dumps(jsonld.compact(
-        from_rdf(graph.serialize),
+        from_rdf(graph),
         ctx={ "sh": SH }
     ), indent=4)
 
