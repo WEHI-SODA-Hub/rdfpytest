@@ -88,7 +88,11 @@ class RdfTestCase(pytest.Item):
             "meta_shacl",
             "iterate_rules",
             "check_dash_result",
-            "do_owl_imports"
+            "do_owl_imports",
+            "data_graph_format",
+            "shacl_graph_format,"
+            "ont_graph_format",
+            "serialize_report_graph",
         }
         for pred, obj in self.node.lit_objs_sans_prefix(RPT):
             if pred not in literal_params:
@@ -100,7 +104,8 @@ class RdfTestCase(pytest.Item):
         # Add URI params specified using the RPT prefix
         uri_params = {
             "focus_nodes",
-            "use_shapes"
+            "use_shapes",
+            "ont_graph"
         }
         for pred, objs in groupby(self.node.ref_objs_sans_prefix(RPT), key=lambda x: x[0]):
             if pred not in uri_params:
