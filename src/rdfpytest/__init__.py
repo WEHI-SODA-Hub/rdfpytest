@@ -107,10 +107,18 @@ class RdfTestCase(pytest.Item):
             "use_shapes",
             "ont_graph"
         }
-        for pred, objs in groupby(self.node.ref_objs_sans_prefix(RPT), key=lambda x: x[0]):
+        for pred, tups in groupby(self.node.ref_objs_sans_prefix(RPT), key=lambda x: x[0]):
+            objs = [tup[1] for tup in tups]
             if pred not in uri_params:
                 raise ValueError(f"Unknown parameter {pred} in test case {self.node.iri}")
-            validator_kwargs[pred] = [str(obj.iri) for _, obj in objs]
+            if pred == "ont_graph":
+                # The validator takes a single graph for ont_graph, so we need to merge them
+                ont_graph = Graph()
+                for obj in objs:
+                    ont_graph.parse(uri_to_path(str(obj.iri)))
+                validator_kwargs["ont_graph"] = ont_graph
+            else:
+                validator_kwargs[pred] = [str(obj.iri) for obj in objs]
         
         conforms, results_graph, _ = validate(
             data_graph=Graph().parse(uri_to_path(str(data_graph.iri))),
